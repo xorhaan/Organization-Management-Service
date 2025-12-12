@@ -139,6 +139,7 @@ To test the scalability of the **Read** operations:
 2.  Make sure you have created an organization named `org_test` (or update `locustfile.py` with an existing name).
 3.  Run Locust:
     ```bash
+    cd app
     locust -f locustfile.py
     ```
 4.  Open `http://localhost:8089`.
