@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, HTTPException
 from app.schemas.org_schema import (
     OrgCreateRequest, OrgUpdateRequest, OrgResponse
 )
@@ -27,7 +27,9 @@ def update_org(
     service: OrgService = Depends()
 ):
     return service.update_org(
-        payload.old_name, payload.new_name, payload.email, payload.password
+        new_name=payload.organization_name,
+        email=payload.email,
+        password=payload.password
     )
 
 @router.delete("/delete")

@@ -9,9 +9,8 @@ class OrgGetRequest(BaseModel):
     organization_name: str
 
 class OrgUpdateRequest(BaseModel):
-    old_name: str
-    new_name: str
-    email: str
+    organization_name: str 
+    email: str             
     password: str
 
 class OrgDeleteRequest(BaseModel):

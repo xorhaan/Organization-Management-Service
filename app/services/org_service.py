@@ -44,32 +44,43 @@ class OrgService:
         org["admin_user_id"] = str(org["admin_user_id"]) 
         return org
 
-    def update_org(self, old_name: str, new_name: str, email: str, password: str):
-        old_name = old_name.lower()
-        new_name = new_name.lower()
+    def update_org(self, new_name: str, email: str, password: str):
+        admin = admins.find_one({"email": email})
+        if not admin:
+            raise ValueError("Invalid credentials") 
+        if not Hash.verify(password, admin["password"]):
+            raise ValueError("Invalid credentials")
 
-        if not organizations.find_one({"name": old_name}):
-            raise ValueError("Old organization does not exist")
+        old_name = admin["org_name"]
+        
+        old_name_lower = old_name.lower()
+        new_name_lower = new_name.lower()
 
-        if old_name != new_name and organizations.find_one({"name": new_name}):
+        if old_name_lower == new_name_lower:
+            return {"updated": False, "message": "New name is same as old name"}
+
+        if organizations.find_one({"name": new_name_lower}):
             raise ValueError("New organization name already exists")
+        self.tenant_service.rename_collection(old_name_lower, new_name_lower)
 
-        if old_name != new_name:
-            self.tenant_service.rename_collection(old_name, new_name)
+        organizations.update_one(
+            {"name": old_name_lower}, 
+            {"$set": {
+                "name": new_name_lower,
+                "collection_name": f"org_{new_name_lower}"
+            }}
+        )
+        
+        admins.update_one(
+            {"email": email},
+            {"$set": {"org_name": new_name_lower}}
+        )
 
-        hashed = Hash.hash_password(password)
-        admins.update_one({"org_name": old_name}, {"$set": {
-            "email": email,
-            "password": hashed,
-            "org_name": new_name
-        }})
-
-        organizations.update_one({"name": old_name}, {"$set": {
-            "name": new_name,
-            "collection_name": f"org_{new_name}"
-        }})
-
-        return {"updated": True}
+        return {
+            "updated": True, 
+            "old_name": old_name_lower, 
+            "new_name": new_name_lower
+        }
 
     def delete_org(self, name: str, requesting_admin_id: str):
         name = name.lower()
