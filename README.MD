@@ -2,6 +2,8 @@
 
 A multi-tenant backend service built with **FastAPI** and **MongoDB** that implements a "Collection-per-Tenant" architecture. This service allows for the dynamic creation, management, and secure isolation of organization data.
 
+![Arch](<static/image.png>)
+
 > **Live Demo:** [[Live URL](https://organization-management-service-production.up.railway.app/)]
 >
 > **Note for Evaluators:** The deployed version includes a **Live Database Console** on the frontend. You can use this to verify that MongoDB collections are physically created (`org_tesla`) and renamed (`org_spacex`) in real-time without needing direct database access.
