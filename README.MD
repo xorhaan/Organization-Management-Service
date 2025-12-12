@@ -107,7 +107,7 @@ JWT_ALGORITHM=HS256
 Start the application using Uvicorn.
 
 ```bash
-uvicorn app.main:app --reload
+python -m uvicorn app.main:app --reload
 ```
 
 -----
