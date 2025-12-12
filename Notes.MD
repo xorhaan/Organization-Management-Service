@@ -76,5 +76,5 @@ Despite the limitations of the requested architecture, I implemented specific op
 
 ## 5. Load Testing with Locust
 
-![alt text](<Screenshot 2025-12-12 at 3.14.52 PM.png>)
-![alt text](<Screenshot 2025-12-12 at 3.14.09 PM.png>)
+![alt text](<static/graph.png>)
+![alt text](<static/results.png>)
