@@ -1,4 +1,5 @@
 from app.database.tenant_db import tenant_client, TENANT_DB_NAME
+from datetime import datetime, UTC
 
 class TenantCollectionService:
     def get_tenant_db(self):
@@ -12,9 +13,19 @@ class TenantCollectionService:
             pass 
         else:
             db.create_collection(collection_name)
-            
+            default_schema = {
+                "doc_type": "config",
+                "created_at": datetime.now(UTC),
+                "settings": {
+                    "theme": "light",
+                    "max_users": 10,
+                    "is_active": True
+                },
+                "welcome_message": f"Welcome to the {org_name} workspace."
+            }
+            db[collection_name].insert_one(default_schema)
         return collection_name
-    
+
     def rename_collection(self, old_name: str, new_name: str):
         db = self.get_tenant_db()
         old = f"org_{old_name.lower()}"
