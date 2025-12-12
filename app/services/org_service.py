@@ -42,6 +42,10 @@ class OrgService:
         
         org["_id"] = str(org["_id"])
         org["admin_user_id"] = str(org["admin_user_id"]) 
+        is_local = "localhost" in settings.MONGO_URI or "127.0.0.1" in settings.MONGO_URI
+        if not is_local:
+            if "db_connection_uri" in org:
+                del org["db_connection_uri"]
         return org
 
     def update_org(self, new_name: str, email: str, password: str):
