@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organization Manager</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --font-family: 'Inter', sans-serif;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --bg-color: #f1f5f9;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: var(--font-family);
+            padding-bottom: 60px;
+            /* 1. REDUCED BASE FONT SIZE */
+            font-size: 0.9rem; 
+        }
+
+        /* Navbar Styling */
+        nav {
+            background: white;
+            padding: 0.75rem 1.5rem; /* Slightly reduced padding */
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        nav strong { font-weight: 700; font-size: 1.1rem; color: #0f172a; }
+
+        /* Auth Pill */
+        .auth-pill {
+            padding: 0.2rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background-color: #fee2e2;
+            color: #991b1b;
+            transition: all 0.3s ease;
+        }
+        .auth-pill.active {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        /* Card Styling */
+        article {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            /* Reduced internal padding to de-clutter */
+            padding: 1rem; 
+        }
+        article:hover { transform: translateY(-2px); }
+        
+        article header {
+            background: transparent;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 0.5rem;
+            margin-bottom: 0.75rem; /* Reduced margin */
+            font-weight: 700;
+            font-size: 1rem;
+            color: #334155;
+        }
+
+        /* --- KEY CHANGES FOR INPUTS --- */
+        
+        /* 2. COMPACT INPUTS & BUTTONS */
+        input, button, select {
+            font-size: 0.85rem !important; /* Smaller font inside inputs */
+            padding: 0.4rem 0.6rem !important; /* Slimmer padding */
+            height: auto !important; /* Allow height to shrink */
+            line-height: 1.2 !important;
+        }
+
+        /* 3. MAXIMIZE WIDTH & REDUCE SPACING */
+        input { 
+            border: 1px solid #cbd5e1 !important; 
+            margin-bottom: 0.5rem !important; /* Tighter vertical spacing */
+            width: 100%; /* Ensure full width usage */
+        }
+        
+        button { 
+            border-radius: 4px; 
+            font-weight: 600; 
+            width: 100%;
+            margin-bottom: 0; /* Remove default bottom margin */
+        }
+        
+        /* Helper for small labels */
+        .input-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-bottom: 4px;
+            display: block;
+        }
+        
+        /* Terminal Response Box - Adjusted size */
+        .response {
+            background: #1e293b;
+            color: #a5b4fc;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 0.7rem; /* Smaller terminal font */
+            min-height: 50px;
+            max-height: 150px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            border: 1px solid #334155;
+            margin-top: 12px;
+        }
+
+        /* Delete Card Special Styling */
+        .card-danger { border-top: 3px solid #ef4444; }
+        .card-danger header { color: #ef4444; }
+
+        /* Debug Section */
+        .debug-section {
+            background: #ffffff;
+            border: 1px dashed #6366f1;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            text-align: center;
+        }
+        .debug-section h3 { color: #4f46e5; font-size: 1.1rem; margin-bottom: 0.5rem; }
+        .db-state {
+            text-align: left;
+            background: #0f172a;
+            color: #22c55e;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+            font-family: monospace;
+            font-size: 0.75rem;
+            min-height: 80px;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <ul>
+            <li><strong>🏢 Org Manager</strong></li>
+        </ul>
+        <ul>
+            <li>
+                <span id="auth-status" class="auth-pill">Not Authenticated</span>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <div class="grid">
+            
+            <article>
+                <header>✨ Create Organization</header>
+                <div>
+                    <input type="text" id="create_name" placeholder="Org Name (e.g., Tesla)">
+                    <input type="email" id="create_email" placeholder="Admin Email">
+                    <input type="password" id="create_pass" placeholder="Admin Password">
+                    <button onclick="createOrg()">Create Organization</button>
+                </div>
+                <div id="res_create" class="response">// Waiting for input...</div>
+            </article>
+
+            <article>
+                <header>🔐 Admin Login</header>
+                <div>
+                    <input type="email" id="login_email" placeholder="Admin Email">
+                    <input type="password" id="login_pass" placeholder="Admin Password">
+                    <button class="contrast" onclick="login()">Login & Get Token</button>
+                </div>
+                <div id="res_login" class="response">// Token will appear here...</div>
+            </article>
+
+            <article>
+                <header>📋 Get Details</header>
+                <div>
+                    <input type="text" id="get_name" placeholder="Org Name">
+                    <button class="secondary" onclick="getOrg()">Fetch Metadata</button>
+                </div>
+                <div id="res_get" class="response">// Details will appear here...</div>
+            </article>
+
+            <article>
+                <header>✏️ Rename Org</header>
+                <div>
+                    <span class="input-label">Requires original credentials:</span>
+                    <input type="text" id="update_newname" placeholder="New Org Name">
+                    <input type="email" id="update_email" placeholder="Admin Email">
+                    <input type="password" id="update_pass" placeholder="Admin Password">
+                    <button class="outline" onclick="updateOrg()">Rename Organization</button>
+                </div>
+                <div id="res_update" class="response">// Result...</div>
+            </article>
+
+            <article class="card-danger">
+                <header>🗑️ Delete Org</header>
+                <div>
+                     <span class="input-label" style="color: #ef4444;">* Requires Login (Step 2)</span>
+                    <input type="text" id="delete_name" placeholder="Org Name to Delete">
+                    <button style="background-color: #ef4444; border-color: #ef4444;" onclick="deleteOrg()">Delete Permanently</button>
+                </div>
+                <div id="res_delete" class="response">// Result...</div>
+            </article>
+
+        </div>
+
+        <div class="debug-section">
+            <h3>🕵️ Evaluator Console</h3>
+            <p style="color: #64748b; margin-bottom: 1rem; font-size: 0.85rem;">
+                Verify that MongoDB collections are being physically created and renamed in real-time.
+            </p>
+            <button class="secondary outline" style="width: auto; padding: 0.4rem 1rem;" onclick="fetchCollections()">🔄 Refresh Database State</button>
+            <div id="db_state" class="db-state">Connecting to MongoDB...</div>
+        </div>
+    </main>
+
+    <script>
+        let authToken = null;
+        const API_URL = ""; 
+
+        async function apiCall(endpoint, method, body = null, headers = {}) {
+            try {
+                const options = { method, headers: { 'Content-Type': 'application/json', ...headers } };
+                if (body) options.body = JSON.stringify(body);
+                
+                if (endpoint.includes("/admin/login")) {
+                    delete options.headers['Content-Type'];
+                    const formData = new FormData();
+                    formData.append('username', body.username);
+                    formData.append('password', body.password);
+                    options.body = formData;
+                }
+
+                const res = await fetch(API_URL + endpoint, options);
+                const data = await res.json();
+                return { status: res.status, data };
+            } catch (err) {
+                return { status: 500, data: { error: err.message } };
+            }
+        }
+
+        function showRes(elementId, res) {
+            const el = document.getElementById(elementId);
+            // Added simple timestamp to make it feel more like a log
+            const time = new Date().toLocaleTimeString();
+            el.innerText = `[${time}] Status: ${res.status}\n${JSON.stringify(res.data, null, 2)}`;
+            
+            // Visual feedback for errors in the terminal
+            if (res.status >= 400) {
+                el.style.color = "#f87171"; // Red text for error
+                el.style.borderColor = "#ef4444";
+            } else {
+                el.style.color = "#a5b4fc"; // Reset to Indigo
+                el.style.borderColor = "#334155";
+            }
+        }
+
+        // --- ACTIONS ---
+
+        async function createOrg() {
+            const res = await apiCall('/org/create', 'POST', {
+                organization_name: document.getElementById('create_name').value,
+                email: document.getElementById('create_email').value,
+                password: document.getElementById('create_pass').value
+            });
+            showRes('res_create', res);
+            if(res.status === 201 || res.status === 200) fetchCollections();
+        }
+
+        async function login() {
+            const res = await apiCall('/admin/login', 'POST', {
+                username: document.getElementById('login_email').value,
+                password: document.getElementById('login_pass').value
+            });
+            showRes('res_login', res);
+            
+            if (res.status === 200 && res.data.access_token) {
+                authToken = res.data.access_token;
+                const statusEl = document.getElementById('auth-status');
+                statusEl.innerText = "Authenticated ✅";
+                statusEl.classList.add('active'); // Activates green styling
+                statusEl.style.color = ""; // Clear inline style to let CSS take over
+            }
+        }
+
+        async function getOrg() {
+            const name = document.getElementById('get_name').value;
+            const res = await apiCall(`/org/get?organization_name=${name}`, 'GET');
+            showRes('res_get', res);
+        }
+
+        async function updateOrg() {
+            const res = await apiCall('/org/update', 'PUT', {
+                organization_name: document.getElementById('update_newname').value,
+                email: document.getElementById('update_email').value,
+                password: document.getElementById('update_pass').value
+            });
+            showRes('res_update', res);
+             if(res.status === 200) fetchCollections();
+        }
+
+        async function deleteOrg() {
+            if (!authToken) return alert("Please Login (Step 2) first!");
+            const name = document.getElementById('delete_name').value;
+            
+            const res = await apiCall(`/org/delete?organization_name=${name}`, 'DELETE', null, {
+                'Authorization': `Bearer ${authToken}`
+            });
+            showRes('res_delete', res);
+             if(res.status === 200) fetchCollections();
+        }
+
+        async function fetchCollections() {
+            const el = document.getElementById('db_state');
+            el.innerText = "> Fetching from MongoDB...";
+            
+            const res = await apiCall('/org/debug/collections', 'GET');
+            
+            if (res.status === 200) {
+                const list = res.data.collections;
+                if (!list || list.length === 0) {
+                    el.innerText = "> Database is empty (No 'org_' collections found).";
+                } else {
+                    el.innerText = "> 📂 MongoDB Collections:\n\n" + list.map(c => `  - ${c}`).join("\n");
+                }
+            } else {
+                el.innerText = "> Error fetching collections.\n(Ensure /org/debug/collections endpoint exists in backend)";
+            }
+        }
+    
+        window.onload = fetchCollections;
+    </script>
+</body>
+</html>

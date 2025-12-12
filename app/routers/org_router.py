@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, status, HTTPException
+from app.services.tenant_collection_service import TenantCollectionService
 from app.schemas.org_schema import (
     OrgCreateRequest, OrgUpdateRequest, OrgResponse
 )
@@ -41,3 +42,14 @@ def delete_org(
     requesting_admin_id = current_admin["admin_id"]
     
     return service.delete_org(organization_name, requesting_admin_id)
+
+@router.get("/debug/collections")
+def list_all_collections():
+    service = TenantCollectionService()
+    db = service.get_tenant_db()
+    
+    collections = db.list_collection_names()
+    
+    org_collections = [name for name in collections if name.startswith("org_")]
+    
+    return {"collections": org_collections}

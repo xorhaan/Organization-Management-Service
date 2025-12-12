@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from app.routers.org_router import router as org_router
 from app.routers.admin_router import router as admin_router
 
@@ -28,3 +29,5 @@ async def permission_error_handler(request: Request, exc: PermissionError):
 
 app.include_router(org_router)
 app.include_router(admin_router)
+
+app.mount("/", StaticFiles(directory="static", html=True), name="static")
